@@ -1,0 +1,30 @@
+repos:
+  pcp:
+    url: https://github.com/kelby0320/platform-control-plane
+    path: ../platform-control-plane
+    role: public-api
+    depends_on: [apis]
+
+  aisp:
+    url: https://github.com/kelby0320/ai-services-plane
+    path: ../ai-services-plane
+    role: ai-services
+    depends_on: [apis]
+
+  uip:
+    url: https://github.com/kelby0320/user-interface-plane
+    path: ../user-interface-plane
+    role: frontend
+    depends_on: [apis]
+
+  apis:
+    url: https://github.com/kelby0320/platform-apis
+    path: ../platform-apis
+    role: contracts
+    depends_on: []
+
+  stack:
+    url: https://github.com/kelby0320/platform-stack
+    path: ../platform-stack
+    role: runtime-harness
+    depends_on: [pcp, aisp, uip]
