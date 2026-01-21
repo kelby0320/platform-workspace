@@ -1,0 +1,24 @@
+[project]
+name = "stack"
+version = "0.1.0"
+description = "Stack management CLI for platform workspace"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "httpx>=0.28.1",
+    "pyyaml>=6.0.3",
+    "typer>=0.21.1",
+]
+
+[project.scripts]
+stack = "stack.cli:app"
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/stack"]
