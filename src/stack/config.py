@@ -8,8 +8,8 @@ import yaml
 def get_workspace_root() -> Path:
     """Get the workspace root directory (platform-workspace)."""
     current = Path(__file__).resolve()
-    # Navigate up from src/stack/config.py to scripts/stack, then to scripts, then to workspace
-    return current.parent.parent.parent.parent.parent
+    # Navigate up from src/stack/config.py to workspace
+    return current.parent.parent.parent
 
 
 def get_repos_config() -> dict:

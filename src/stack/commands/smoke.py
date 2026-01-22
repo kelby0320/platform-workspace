@@ -42,8 +42,9 @@ def smoke() -> None:
 
     if success:
         console.print("\n[bold green]Smoke test PASSED![/bold green]")
-        console.print("[yellow]Bringing stack down...[/yellow]")
-        _bring_stack_down(stack_path)
+        if stack_was_down:
+            console.print("[yellow]Bringing stack down...[/yellow]")
+            _bring_stack_down(stack_path)
     else:
         console.print("\n[bold red]Smoke test FAILED![/bold red]")
         console.print("[yellow]Leaving stack up for debugging.[/yellow]")
@@ -66,11 +67,7 @@ def _is_stack_up(stack_path) -> bool:
 
 def _bring_stack_up(stack_path) -> None:
     """Start the docker compose stack."""
-    cmd = [
-        "docker", "compose",
-        "-f", "compose.services.yaml",
-        "up", "-d"
-    ]
+    cmd = ["docker", "compose", "-f", "compose.services.yaml", "up", "-d"]
     result = subprocess.run(
         cmd,
         cwd=stack_path,
@@ -85,10 +82,13 @@ def _bring_stack_up(stack_path) -> None:
 def _bring_stack_down(stack_path) -> None:
     """Stop the docker compose stack."""
     cmd = [
-        "docker", "compose",
-        "-f", "compose.services.yaml",
-        "-f", "compose.infra.yaml",
-        "down"
+        "docker",
+        "compose",
+        "-f",
+        "compose.services.yaml",
+        "-f",
+        "compose.infra.yaml",
+        "down",
     ]
     subprocess.run(cmd, cwd=stack_path, capture_output=True, text=True)
 
@@ -163,6 +163,7 @@ def _run_smoke_test() -> bool:
                     if data:
                         try:
                             import json
+
                             event_data = json.loads(data)
                             if "content" in event_data:
                                 full_response += event_data["content"]
@@ -180,7 +181,9 @@ def _run_smoke_test() -> bool:
                 console.print("  [green]Response validation: PASSED[/green]")
                 return True
             else:
-                console.print(f"  [red]Response validation: FAILED (expected '35')[/red]")
+                console.print(
+                    f"  [red]Response validation: FAILED (expected '35')[/red]"
+                )
                 return False
 
     except httpx.RequestError as e:

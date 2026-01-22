@@ -25,14 +25,20 @@ def validate(full: bool = False) -> None:
         console.print("[bold]Running full validation on all repositories...[/bold]")
         repos_to_validate = list(repos.keys())
     else:
-        console.print("[bold]Running quick validation on changed repositories...[/bold]")
+        console.print(
+            "[bold]Running quick validation on changed repositories...[/bold]"
+        )
         repos_to_validate = _get_changed_repos(repos, workspace)
 
         if not repos_to_validate:
-            console.print("[green]No changed repositories found. Nothing to validate.[/green]")
+            console.print(
+                "[green]No changed repositories found. Nothing to validate.[/green]"
+            )
             return
 
-        console.print(f"\n[cyan]Changed repositories:[/cyan] {', '.join(repos_to_validate)}\n")
+        console.print(
+            f"\n[cyan]Changed repositories:[/cyan] {', '.join(repos_to_validate)}\n"
+        )
 
     results = {}
     for repo_key in repos_to_validate:
@@ -80,6 +86,52 @@ def _get_changed_repos(repos: dict, workspace: Path) -> list[str]:
     return changed
 
 
+def _detect_repo_type(repo_path: Path) -> str | None:
+    """Detect the repository type based on project files.
+
+    Returns:
+        'uv' for Python/UV projects, 'just' for Justfile projects,
+        'pnpm' for PNPM projects, or None if unknown.
+    """
+    if (repo_path / "justfile").exists():
+        return "just"
+    if (repo_path / "package.json").exists():
+        return "pnpm"
+    if (repo_path / "pyproject.toml").exists():
+        return "uv"
+    return None
+
+
+def _get_validation_steps(repo_type: str) -> list[tuple[str, list[str] | None]]:
+    """Get validation steps for a given repository type.
+
+    Returns:
+        List of (step_name, command) tuples. Command is None if step should be skipped.
+    """
+    if repo_type == "uv":
+        return [
+            ("build", ["uv", "sync"]),
+            ("format", ["uv", "run", "ruff", "format", "--check", "."]),
+            ("lint", ["uv", "run", "ruff", "check", "."]),
+            ("test", ["uv", "run", "pytest", "-q"]),
+        ]
+    elif repo_type == "just":
+        return [
+            ("build", ["just", "build"]),
+            ("format", ["just", "fmt"]),
+            ("lint", ["just", "lint"]),
+            ("test", ["just", "test"]),
+        ]
+    elif repo_type == "pnpm":
+        return [
+            ("build", ["pnpm", "build"]),
+            ("format", None),  # Skip for now
+            ("lint", ["pnpm", "lint"]),
+            ("test", None),  # Skip for now
+        ]
+    return []
+
+
 def _validate_repo(repo_path: Path) -> dict:
     """Run validation steps on a repository."""
     results = {
@@ -90,20 +142,23 @@ def _validate_repo(repo_path: Path) -> dict:
         "test": None,
     }
 
-    validation_steps = [
-        ("build", ["uv", "sync"]),
-        ("format", ["uv", "run", "ruff", "format", "--check", "."]),
-        ("lint", ["uv", "run", "ruff", "check", "."]),
-        ("test", ["uv", "run", "pytest", "-q"]),
-    ]
-
-    # Check if it's a UV project
-    if not (repo_path / "pyproject.toml").exists():
+    repo_type = _detect_repo_type(repo_path)
+    if repo_type is None:
         results["status"] = "skipped"
-        results["details"] = "Not a Python project (no pyproject.toml)"
+        results["details"] = "Unknown project type"
         return results
 
+    validation_steps = _get_validation_steps(repo_type)
+    console.print(f"  Detected [bold]{repo_type}[/bold] project")
+
     for step_name, cmd in validation_steps:
+        if cmd is None:
+            results[step_name] = "skipped"
+            console.print(
+                f"  Running {step_name}... [yellow]skipped[/yellow]", style="dim"
+            )
+            continue
+
         console.print(f"  Running {step_name}...", style="dim")
         try:
             result = subprocess.run(
@@ -125,7 +180,9 @@ def _validate_repo(repo_path: Path) -> dict:
                     console.print(result.stderr, style="dim red")
         except FileNotFoundError:
             results[step_name] = "skipped"
-            console.print(f"    [yellow]{step_name} skipped (command not found)[/yellow]")
+            console.print(
+                f"    [yellow]{step_name} skipped (command not found)[/yellow]"
+            )
         except subprocess.TimeoutExpired:
             results[step_name] = "timeout"
             results["status"] = "failed"
