@@ -19,7 +19,7 @@ Use this repo whenever a change spans:
 - ARCHITECTURE.md: system architecture and repo responsibilities
 - repos.yaml: list of repositories and dependency relationships
 - state/: sprint/work-order coordination and current plan
-- scripts/: cloning, validation, and smoke/integration checks
+- src/: stack cli with support for cloning, validation, and smoke tests
 
 ## Typical Feature Workflow
 
