@@ -20,11 +20,14 @@ Use this repo whenever a change spans:
 - repos.yaml: list of repositories and dependency relationships
 - state/: sprint/work-order coordination and current plan
 - src/: stack cli with support for cloning, validation, and smoke tests
+- workstreams/: playbooks for common multi-repo work (feature delivery, interface changes, observability)
+- workstreams/repos: instructions for how to work in a particular repository
 
 ## Typical Feature Workflow
 
 1) Plan
 - Break Feature X into work orders (usually 3–10).
+- Each work order operates in one workstream.
 - Each work order targets one repo and includes validation steps.
 
 2) Execute (parallel)

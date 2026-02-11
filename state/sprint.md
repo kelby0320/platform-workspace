@@ -19,6 +19,7 @@
 
 ### WI-01: <title>
 - Repo: <pcp|aisp|uip|apis|stack|workspace>
+- Workstream: <feature-delivery|interface-changes|observability>
 - Owner agent: <blank initially>
 - Summary: <what to change>
 - Inputs: <files/APIs this depends on>
