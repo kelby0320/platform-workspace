@@ -1,9 +1,34 @@
 # AGENTS.md — Platform Workspace Rules
 
-These rules apply to all AI agents working across the platform repositories.
-Violating a rule makes the work invalid, even if it compiles.
+## Canonical References (Read First)
+
+This repository is the coordination/judge layer for the platform.
+
+- README.md: how to use this repo and the workflow entrypoints.
+- ARCHITECTURE.md: platform-wide architecture and request flows.
+- repos.yaml: source of truth for repository URLs, roles, and local checkout paths.
+
+## Tooling: stack CLI
+
+The stack cli can be used validate and test the entire stack.
+All stack cli commands should be executed via uv:
+
+- uv run stack validate --quick
+- uv run stack validate --full
+- uv run stack smoke
+
+Do not run `stack ...` as a standalone command.
+Use `uv run stack ...` as the canonical invocation.
+
+## Planning Source of Truth
+
+All planning and work-item tracking happens in `state/sprint.md`.
+Agents should update `state/sprint.md` rather than creating new planning docs.
 
 ## Core Rules
+
+These rules apply to all AI agents working across the platform repositories.
+Violating a rule makes the work invalid, even if it compiles.
 
 1) Scope to one repo
 - A single work order should modify ONE repository whenever possible.
